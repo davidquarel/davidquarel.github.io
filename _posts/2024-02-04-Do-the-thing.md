@@ -60,8 +60,8 @@ My *thing(s)* that I'm glad I did/learned, in some loose off-the-cuff decreasing
 
 [^magnitude]: I'm ignoring for the moment that some of these events are/were preconditions for others, or wholly out of my control: If my maths teacher in my final year of high school didn't recommend me to stick at the maths course I wanted to drop out of, I likely wouldn't have taken pure maths[^maths] at university, and my life would be on a radically different trajectory. 
 
-[^maths]: I was writing an anecdote here about [pure maths]({% post_url 2024-02-04-How-I-got-into-pure-maths %}) but it got too big and it grew to its own post.
-
+[^maths]: I was writing an anecdote here about [pure maths](/404.html) but it got too big and it grew to its own post.
+<!-- [pure maths]({% post_url 2024-02-04-How-I-got-into-pure-maths %}) -->
 
 
 #### Drastic Career Shift 
@@ -102,7 +102,9 @@ Doing things in my job as a [tutor]([[2024-02-04-Reflections-on-teaching]]) that
 * I got to lecture for a week! But before I did, COVID spread to Canberra and the university kicked us all home, so I delivered it online from my bedroom. Not so fun.
 * I got to make/co-make YouTube channels for [first year theoretical comp](https://www.youtube.com/@COMPFoundationofComputing)/[engineering maths](https://www.youtube.com/@ENGNVideos) courses. I look back and cringe a bit at the low budget production[^recording] quality[^recording2], but people still watch it and find it useful, so that's good enough for me.
 
-[^toc]: It was a course on [introductory theoretical computer science](https://bercher.net/teaching/teaching-at-the-anu/courses/theory), automata, Turing machines, complexity theory, all that fun stuff. Having a background in [pure maths]({% post_url 2024-02-04-How-I-got-into-pure-maths %}) really helped out for this one.
+[^toc]: It was a course on [introductory theoretical computer science](https://bercher.net/teaching/teaching-at-the-anu/courses/theory), automata, Turing machines, complexity theory, all that fun stuff. Having a background in [pure maths](/404.html)
+<!-- TODO: [pure maths]({% post_url 2024-02-04-How-I-got-into-pure-maths %}) --> 
+really helped out for this one. 
 
 [^recording]: My recording setup was a document camera on campus that I'd use late at night when the place was quiet and just one-shot the videos, and upload straight to YouTube. Editing was live (would just pause the recording if I needed to think or do a jump cut). If I'd do it over, I'd probably use a drawing tablet and add a face-cam, but keep the charm of the off-the-cuff unscripted videos. They were each pretty short (~6-8 minutes, usually)[^optimal-vid-length], so if I messed up I'd just chuck the recording and do it again.
 
@@ -152,7 +154,8 @@ Trimming possessions down to what will fit in a ~~suitcase~~ hiking backpack + a
 
 [^exceptions]: The exception to the rule is things that have a large value-add otherwise to justify the size. I own a 32" 4K screen plus a monitor stand for it that I have attached to the desk at where ever I happen to work at every day (which is currently LISA). The added productivity of having a large screen + the desk real estate I get back from having a nice monitor arm to hold it is to me justified, and both are liquid enough assets I could quickly sell them if I needed to move again. 
 
-#### [Studying Pure Maths]({% post_url 2024-02-04-How-I-got-into-pure-maths %})
+#### [Studying Pure Maths](/404.html)
+<!-- ({% post_url 2024-02-04-How-I-got-into-pure-maths %}) -->
 Spending a large part of my studies on abstract nonsense pure mathematics, which ended up being far more useful than I could have known. Expanded to its own post.
 
 #### [Cycling]({% post_url 2024-02-04-Get-a-bike %}) 
