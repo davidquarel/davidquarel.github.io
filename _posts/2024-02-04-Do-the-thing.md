@@ -98,9 +98,10 @@ Attending the [MLAB2022](https://www.redwoodresearch.org/mlab) program run by Re
 [^agisf]: [AGISF](https://aisafetyfundamentals.com/) somewhat solves this, though a textbook it isn't.
 
 <!-- [tutor]([[2024-02-04-Reflections-on-teaching]]) -->
+<!-- [co-designing a toy CPU ISA]({% post_url 2024-03-26-The-optimal-teaching-ISA %}) -->
 #### From Tutor to Course Coordination 
 Doing things in my job as a [tutor](/404.html) that's usually beyond the scope of the job: Being actively involved in the high-level decision-making of course content.
-* The most enjoyment I had doing this was [co-designing a toy CPU ISA]({% post_url 2024-03-26-The-optimal-teaching-ISA %}) from scratch, still used to this day.
+* The most enjoyment I had doing this was [co-designing a toy CPU ISA](/404.html) from scratch, still used to this day.
 * Teaching a course I had not taken before[^toc] was also very enjoyable: I'd attend the lectures with students, and then deliver the tutorial on the content a few days later. The short recurrent deadlines forced me to absorb the material quickly not just to the point where I could understand it, but then teach it to someone less familiar so they could [learn the material faster]({% post_url 2024-07-17-On-effective-pedagogy %}) than I did.
 * I got to lecture for a week! But before I did, COVID spread to Canberra and the university kicked us all home, so I delivered it online from my bedroom. Not so fun.
 * I got to make/co-make YouTube channels for [first year theoretical comp](https://www.youtube.com/@COMPFoundationofComputing)/[engineering maths](https://www.youtube.com/@ENGNVideos) courses. I look back and cringe a bit at the low budget production[^recording] quality[^recording2], but people still watch it and find it useful, so that's good enough for me.
