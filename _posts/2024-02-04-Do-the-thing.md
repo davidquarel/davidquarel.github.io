@@ -16,7 +16,7 @@ tags:
 ...still here?
 
 Then I guess you're just the person[^audience] I'm writing[^footnote] this for, or you ignore instructions.
-So here's the deal. I'll have this interesting[^interesting] blogpost here waiting for you, and in exchange you have to do me the following: *the thing*. 
+So here's the deal. I'll have this interesting[^interesting] blogpost here waiting for you, and in exchange you have to do for me the following: *the thing*. 
 
 No, not reading someone else's guide to doing *the thing*. No, not reading wikipedia on *the thing* or passively watching YouTube tutorials of doing *the thing*[^danger]. Do *the thing*. Do it.
 
@@ -38,7 +38,7 @@ So I'm doing you a solid here by provide a strong hard-to-weasel out of excuse t
 
 **Set an alarm for 10 minutes, pause all your notifications or whatever, and spend a solid uninterrupted measured-by-the-clock TEN MINUTES on trying to do the thing**.
 
-I even went so far as to add a bunch of bloat javascript[^javascript] just to hide the rest of the blogpost under a checkbox so your eyes won't sneak ahead, and you can't tell yourself that you'll do the thing *after* reading the rest of the post. You will have to actively choose to cheat yourself out of an opportunity to do the thing, and miss out on the sense of satisfaction of having made a good-faith attempt. If none of that stops you, well, there's nothing else I can do. I'm a blogpost, not the police.
+I even went so far as to add a bunch of bloat javascript[^javascript] just to hide the rest of the blogpost under a checkbox so your eyes won't sneak ahead, and you can't bullshit yourself that you'll do the thing *after* reading the rest of the post. You will have to actively choose to cheat yourself out of an opportunity to do the thing, and miss out on the sense of satisfaction of having made a good-faith attempt. If none of that stops you, well, there's nothing else I can do. I'm a blogpost, not the police.
 
 {% capture hidden_content %}
 
@@ -46,7 +46,7 @@ I even went so far as to add a bunch of bloat javascript[^javascript] just to hi
 
 There's a few reasons that I tell myself. I leave it to you to decide which are genuine, and which are post-hoc rationalisations.
 
-1. It's fun! That's sufficient justification alone.
+1. It's fun! That's sufficient justification alone for a lot of actions.
 2. It's worth some signalling points to write down a list of achievements and put it on a website[^meta].
 3. Having a list of things that I did helps to remind myself that I am making forward progress when it feels like I'm not.
 4. I want to stop past-me from making the mistakes he made (mostly a function of poor trade-offs between exploration (not enough) and exploitation (too much)). Can't do much about that. Maybe someone else can learn from the things I should have done earlier, and crib from my list to avoid learning it the hard way.
@@ -83,7 +83,10 @@ Having the courage[^courage] to leave a job as a teaching assistant at my home u
 
 [^meredian]: Both [Meridian](https://www.meridian-office.org/) and [LISA](https://www.safeai.org.uk/) have been gracious for having me stay and cowork out of their respective spaces, and for that I'm grateful. I've much enjoyed working out of these spaces, and having coworking spaces like these are a huge value add: Having a hub available makes spinning up programs like [CamLAB](https://www.cambridgeaisafety.org/camlab) as low friction as possible.
 
-In retrospect, I should have spent more time exploring other options first. I went with a PhD as it seems like the obvious "next thing to do". If nothing else, the credentialing from being in a PhD program made it easier to leapfrog to where I am now, though taking 6 months to build skills as a software engineer would have been valuable.
+In retrospect, I should have spent more time exploring other options first. I went with a PhD as it seems like the obvious "next thing to do". If nothing else, the credentialing from being in a PhD program made it easier to leapfrog to where I am now, though taking 6 months to build skills as a software engineer[^claude2] would have been valuable.
+
+[^claude2]: Well, maybe. LLMs write a lot of code that I use for experiments, or when I just need a bunch of boilerplate written without much thought, or when I'm trying to just get a quick and dirty script to hack something together. But SWE skills would be valuable for bigger projects and higher level decisions. Maybe I'll just wait 6 months and Claude 3.5 Opus or GPT-5 can handle it.
+
 #### MLAB2022
 Attending the [MLAB2022](https://www.redwoodresearch.org/mlab) program run by Redwood research. It clarified for me what a lot of technical AI safety work others were doing looks like, and gave me a set of skills in practical boots-on-the-ground ML that would have taken months to accumulate alone[^self-teaching].
 * I didn't really absorb everything until I had a second go through the material during [ARENA](https://www.arena.education), where I was part participant/part tutor. I don't think of myself as a particularly slow learner, but more that the other attendees were wicked clever/the pace of the material was very intense.
@@ -94,17 +97,17 @@ Attending the [MLAB2022](https://www.redwoodresearch.org/mlab) program run by Re
 
 [^agisf]: [AGISF](https://aisafetyfundamentals.com/) somewhat solves this, though a textbook it isn't.
 
+<!-- [tutor]([[2024-02-04-Reflections-on-teaching]]) -->
 #### From Tutor to Course Coordination 
-Doing things in my job as a [tutor]([[2024-02-04-Reflections-on-teaching]]) that's usually beyond the scope of the job: Being actively involved in the high-level decision-making of course content.
+Doing things in my job as a [tutor](/404.html) that's usually beyond the scope of the job: Being actively involved in the high-level decision-making of course content.
 * The most enjoyment I had doing this was [co-designing a toy CPU ISA]({% post_url 2024-03-26-The-optimal-teaching-ISA %}) from scratch, still used to this day.
 * Teaching a course I had not taken before[^toc] was also very enjoyable: I'd attend the lectures with students, and then deliver the tutorial on the content a few days later. The short recurrent deadlines forced me to absorb the material quickly not just to the point where I could understand it, but then teach it to someone less familiar so they could [learn the material faster]({% post_url 2024-07-17-On-effective-pedagogy %}) than I did.
 * I got to lecture for a week! But before I did, COVID spread to Canberra and the university kicked us all home, so I delivered it online from my bedroom. Not so fun.
 * I got to make/co-make YouTube channels for [first year theoretical comp](https://www.youtube.com/@COMPFoundationofComputing)/[engineering maths](https://www.youtube.com/@ENGNVideos) courses. I look back and cringe a bit at the low budget production[^recording] quality[^recording2], but people still watch it and find it useful, so that's good enough for me.
 
-[^toc]: It was a course on [introductory theoretical computer science](https://bercher.net/teaching/teaching-at-the-anu/courses/theory), automata, Turing machines, complexity theory, all that fun stuff. Having a background in [pure maths](/404.html)
-really helped out for this one. 
+[^toc]: It was a course on [introductory theoretical computer science](https://bercher.net/teaching/teaching-at-the-anu/courses/theory), automata, Turing machines, complexity theory, all that fun stuff. Having a background in [pure maths](/404.html) really helped out for this one. 
 
-[^recording]: My recording setup was a document camera on campus that I'd use late at night when the place was quiet and just one-shot the videos, and upload straight to YouTube. Editing was live (would just pause the recording if I needed to think or do a jump cut). If I'd do it over, I'd probably use a drawing tablet and add a face-cam, but keep the charm of the off-the-cuff unscripted videos. They were each pretty short (~6-8 minutes, usually)[^optimal-vid-length], so if I messed up I'd just chuck the recording and do it again.
+[^recording]: My recording setup was a document camera on campus that I'd use late at night when the place was quiet and just one-shot the videos, and upload straight to YouTube. Editing was live (would just pause the recording if I needed to think or do a jump cut). If I'd do it over, I'd probably use a drawing tablet and add a face-cam, but keep the charm of the off-the-cuff unscripted videos. They were each pretty short (~6-8 minutes, usually)[^optimal-vid-length], so if I messed up I'd just chuck the recording and do it again.978-0-241-38027-7
 
 [^optimal-vid-length]: I did my homework on this one! [Studies of MOOCs on edX](http://up.csail.mit.edu/other-pubs/las2014-pguo-engagement.pdf) indicate that watch time peaks for lecture videos around 6-9 minutes, and then drops off. If you just slap a camera on the normal hour long lecture, it won't get watched. Lecturing in person and online are much more different dynamics then you'd initially guess, and you have to treat them differently. I couldn't find the original paper I read at the time, but this one has the same conclusion, so good enough.
 
@@ -133,7 +136,7 @@ Reflecting on when I'm [optimising for a proxy of my goals](https://en.wikipedia
 * Over-optimising for GPA/grades. Sure, it helps when applying for a grad job, but (I would suspect that) a portfolio of projects or a github with activity or something, anything, to demonstrate you can do stuff. I barely remember most of the physics that I battled with in my undergrad. What good was it getting a good mark in those subjects, if I didn't retain a lot of the content?
 * Continuing to study physics just so I could have an additional major on my degree I think was a good example of this. Nobody cares that far down the line what major I did or didn't do, and this would have freed up more breadth courses for something I would have enjoyed more/would have been more instrumentally useful later on.
 * Over-optimising for accumulation of money/not spending money when it makes sense to do so.
-* Having a safety net is good, but forgoing fun activities or opportunities, not spending money on a suitable laptop but making do with an older piece of junk, is not worth it in the long run. Large expenses can be a pain point, but consider all the time wasted on juggling around a laptop with poor battery life, and a low resolution screen that is unpleasant to work on. You spend most of your day (well, I do) interacting with the world via my laptop/phone. It makes sense to buy nice ones.
+* Having a safety net is good, but forgoing fun activities or opportunities, not spending money on a suitable laptop but making do with an older piece of junk, is not worth it in the long run. Large expenses can be a pain point, but consider all the time wasted on juggling around a laptop with poor battery life, and a low resolution screen that is unpleasant to work on. You spend most of your day (well, I do) interacting with the world via a laptop/phone. It makes sense to buy nice ones.
 * Huge value add in buying fancy categories of cheap things, as elucidated [here](https://putanumonit.com/2016/05/11/shopping-for-happiness/). Life is too short for
 cheap socks.[^socks]
 * Sometimes it makes sense to buy the subscription to a premium version of software if it saves time. The biggest one of these (imho) is ~~GPT-4~~ 
