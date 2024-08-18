@@ -1,0 +1,477 @@
+---
+layout: post
+title: An optimal ISA for teaching
+date: 2024-03-26 09:00:00 +1100
+categories: jekyll update
+tags:
+  - ramble
+  - "#cpu"
+published: true
+---
+In late 2022, a course convener that I had worked under before on other courses offered me a job to help radically redesign a course from the ground up. This course was on [computer architecture](https://en.wikipedia.org/wiki/Computer_architecture), and the goal was for students to build a CPU from scratch, treating logic gates as the smallest atomic unit[^atomic]. Instead of taking an off-the-shelf existing ISA, or implementing a subset of ARM or 8086 which is often done, we decided to built something bespoke: QuAC[^quac], a CPU optimized specifically for the goal of being relatively simple to construct in hardware[^hardware] while still being a reasonable ISA for writing programs in, leaving a lot of room for extensions. This is a post-mortem of the machine, with some colour commentary of what I would have done differently, and design decisions that were mere. 
+
+[^atomic]: I think the lectures briefly talked about how to build [NAND gates from CMOS](https://en.m.wikipedia.org/wiki/NAND_logic) transistors, and often you want to make use of [tri-state buffers/high-Z](https://en.wikipedia.org/wiki/Three-state_logic) state for CPU designs that are instantiated in reality, and that HIGH/LOW is just an abstraction as the voltage at any point in a circuit is a continuously varying voltage, but we abstract all that away, and assume that logic gates are zero-delay, infinite input impedance, zero output impedance, infinite fan out, perfectly ideal components. If ever a node is simultaneously driven to both zero and one at the same time, the [digital logic simulator](https://github.com/hneemann/Digital) gets upset and throws an error. In real life, depending on what your logic gates are constructed from, you could get an intermediate voltage as the components form a voltage divider over the wire linking the low to high point, or more likely, a lot of angry electrons would flow until one of the components along the chain gives up the ghost and pops, flooding the room with [magic smoke](https://en.wikipedia.org/wiki/Magic_smoke).
+
+[^quac]: Quarel-Akram-Connor, after the codesigners David Quarel (me), the convenor Shoaib Akram, and Jon Connor, the other head TA for the course. Gotta make a legacy somehow.
+
+This make-believe CPU is still used in [COMP2300](https://comp.anu.edu.au/courses/comp2300/) today, so I'll avoid any spoilers for details on constructing the machine, but focus on the trade-offs made when we designed the machine.
+
+<figure style="text-align: center;">
+  <img src="{% link img/quac/schematic.png %}" alt="QuAC Hardware Schematic">
+  <figcaption style="margin-top: 10px;">Figure 1: High-level schematic of the QuAC CPU</figcaption>
+</figure>
+
+The [full ISA spec](https://comp.anu.edu.au/courses/comp2300/resources/08-QuAC-ISA/) is on the course website, though I've replicated it here for convenience.
+The newest ISA might be slightly different as they shuffle things around so you can't just use a solution from a previous year. 
+
+<details markdown="block">
+<summary>QuAC ISA (Click to expand)</summary>
+
+### QuAC ISA
+
+
+
+
+#### Registers
+
+All registers start initalised to `0x0000`, and are 16-bits wide.
+
+| Code  | Mnemonic  | Meaning  | Behaviour |
+| ----- | -----| -----------   | --------- |
+| 000   | `rz` | Zero Register | Always read zero, writes have no effect. |
+| 001   | `r1` | Register 1    | General purpose register. |
+| 010   | `r2` | Register 2    | General purpose register. |
+| 011   | `r3` | Register 3    | General purpose register. |
+| 100   | `r4` | Register 4    | General purpose register. |
+| 101   | `fl` | Flag register | Stores the flags from ALU whenever an ALU instruction is executed. Any operation can read this register. Write is undefined. |
+| 110   | -    | undefined     | Any operation with this register is undefined. |
+| 111   | `pc`    | Program Counter     | General purpose register. Also stores the address of the current instruction being executed, and (unless the current instruction would overwrite it) is incremented to the next address after the current instruction is executed. |
+
+* `rz` is the **zero register**.
+Reading from the zero register returns the value `0x0000`.
+Writing to the zero register has no effect.[^zero-register]
+
+[^zero-register]:
+    Sacrificing an entire register to always be zero might seem
+    expensive, but this allows for a slew of pseudo-instructions
+    like `mov` (register move), `cmp` (compare) and `jp` (jump)
+    to be defined as a special case
+    of existing instructions.
+
+* `r1`, `r2`, `r3`, and `r4` are the **general purpose registers**. You may write to
+them, and they will store a value. Reading from a general purpose register returns the
+last value written to them.
+
+* `fl` is the **flag register**, which stores the flags generated by the last
+successfully executed ALU operation.
+The flag register may be read from like any other general purpose register.
+Writing to the flag register is *undefined behaviour*.[^flag-reg-undef]
+
+* `pc` is the **program counter**. It stores the address of the current instruction
+being executed. After an instruction is executed, the program
+counter is incremented (`pc := pc+1`) **unless** the `pc` would be overwritten by the
+current instruction being executed.[^pc-overwite] The program counter can be read from
+and written to like any other general purpose register.
+
+[^pc-overwite]:
+    This allows for the synthesis of many other instructions. For instance, we can use the
+    following code to skip over a small piece of code.
+    ```quac
+    movl r2, 2  ; r2 := 2
+    add pc, r2  ; pc jumps two addresses forward
+    movl r1, 1  ; this instruction gets skipped
+    movl r3, 3  ; this instruction gets executed
+    ```
+    Or (stranger still) to load the machine code of an instruction itself, and use it as data
+    ```quac
+    ldr r1, [pc]  ; r1 := 0x5710
+    ```
+
+[^flag-reg-undef]:
+    The reason why writing to the flag register is undefined is to make
+    the base ISA as compatible as possible with extensions, as well as
+    make the implemention easier. You might decide that writing to `FL`
+    has no effect, or that it can be written to like any other register.
+    Both are compatible with the spec. You might also want to define
+    a meaning for the other bits in the flag register (usually called *control* bits), and the CPU behaves differently depending on the value of those bits set by the
+    user.
+
+
+### Hardware Instructions
+
+{% include quac/inst_table.html %}
+
+`seth` moves an 8-bit constant (imm8) into the high byte of the destination register `rd`, leaving
+    the low byte of `rd` unchanged. Formally, `rd = (#imm8 << 8) | (rd & 0xff)`.
+
+#### Instruction Encoding
+
+Each instruction in QuAC has one of two formats, **Register Operands Format (R-Mode)**
+or **Immediate Format (I-Mode)**.[^extra-encoding]
+
+[^extra-encoding]:
+    Though there's nothing stopping you from adding extra formats
+    for new instruction when you extend the ISA.
+
+#### Register Operands Format (R-Mode)
+<table>
+  <tr>
+    <td colspan="4" style="text-align: center;">
+      <strong><code>op</code></strong>
+    </td>
+    <td style="text-align: center;"><strong><code>z</code></strong></td>
+    <td colspan="3" style="text-align: center;"><strong><code>rd</code></strong></td>
+    <td style="text-align: center;"><strong><code>0</code></strong></td>
+    <td colspan="3" style="text-align: center;"><strong><code>ra</code></strong></td>
+    <td style="text-align: center;"><strong><code>0</code></strong></td>
+    <td colspan="3" style="text-align: center;"><strong><code>rb</code></strong></td>
+  </tr>
+  <tr>
+    <td><strong>15</strong></td>
+    <td><strong>14</strong></td>
+    <td><strong>13</strong></td>
+    <td><strong>12</strong></td>
+    <td><strong>11</strong></td>
+    <td><strong>10</strong></td>
+    <td><strong>9</strong></td>
+    <td><strong>8</strong></td>
+    <td><strong>7</strong></td>
+    <td><strong>6</strong></td>
+    <td><strong>5</strong></td>
+    <td><strong>4</strong></td>
+    <td><strong>3</strong></td>
+    <td><strong>2</strong></td>
+    <td><strong>1</strong></td>
+    <td><strong>0</strong></td>
+  </tr>
+</table>
+
+#### Immediate Format (I-Mode)
+
+<table style="border-collapse: collapse; width: 100%;">
+  <tr>
+    <td colspan="4" style="text-align: center; vertical-align: middle; height: 40px;">
+      <strong><code>op</code></strong>
+    </td>
+    <td style="text-align: center; vertical-align: middle;">
+      <strong><code>z</code></strong>
+    </td>
+    <td colspan="3" style="text-align: center; vertical-align: middle;">
+      <strong><code>rd</code></strong>
+    </td>
+    <td colspan="8" style="text-align: center; vertical-align: middle;">
+      <strong><code>imm8</code></strong>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"><strong>15</strong></td>
+    <td style="text-align: center;"><strong>14</strong></td>
+    <td style="text-align: center;"><strong>13</strong></td>
+    <td style="text-align: center;"><strong>12</strong></td>
+    <td style="text-align: center;"><strong>11</strong></td>
+    <td style="text-align: center;"><strong>10</strong></td>
+    <td style="text-align: center;"><strong>9</strong></td>
+    <td style="text-align: center;"><strong>8</strong></td>
+    <td style="text-align: center;"><strong>7</strong></td>
+    <td style="text-align: center;"><strong>6</strong></td>
+    <td style="text-align: center;"><strong>5</strong></td>
+    <td style="text-align: center;"><strong>4</strong></td>
+    <td style="text-align: center;"><strong>3</strong></td>
+    <td style="text-align: center;"><strong>2</strong></td>
+    <td style="text-align: center;"><strong>1</strong></td>
+    <td style="text-align: center;"><strong>0</strong></td>
+  </tr>
+</table>
+
+
+
+
+### Definitions
+
+#### All Modes
+
+* `op` (bits 15:12) *Opcode*, a 4-bit code used to specify
+which instruction is being executed.
+
+* `z` (bit 11) *Conditionally Execute on Zero*
+
+  - If the bit `z` is set to zero, the instruction is always executed.
+  - If the bit `z` is set to one, the instruction is only executed if the zero bit
+    in the flag register is set to one. Else, executing the current instruction does
+    nothing.
+  Used by all instructions.
+
+* `rd` (bits 10:8) *Destination/Data register*, indicates where the result
+of the current instruction (if any) is to be written to, or is used
+as the data to store to memory when executing `str`.[^dest-reg]
+
+
+#### R-Mode only
+
+* `0` (bit 7) *Reserved*, Set to zero. Behaviour is undefined if
+set to one.[^reserved-bit]
+
+* `ra` (bits 6:4) *First Operand register/Address register*, indicates the first
+operand for the current instruction, , as well as the register used
+for the address for executing `str` and `ldr` instructions.
+
+* `0` (bit 3) *Reserved*, Set to zero. Behaviour is undefined if
+set to one.[^reserved-bit]
+
+<!-- as well as the register
+in which the base source/destination address is store for executing
+`str` or `ldr` instructions. Used by M-Mode and -->
+
+* `rb` (bits 2:0) *Second Operand register*, indicates the
+second operand for the current instruction, if one exists.
+
+<!-- * `imm3` (3-bits) *Operand Immediate*, the second operand is given
+by a 3-bit immediate value, used only for M-Mode instructions. -->
+
+<!-- * Bit 3 dictates if the second operand is a register (R-Mode)
+or a 3-bit immediate (M-Mode).  -->
+
+#### I-Mode Only
+
+* `imm8` (bits 7:0) *8-bit Immediate*, an 8-bit immediate value $$n$$ in the
+range $$0 \leq n \leq 255$$ used for the `movl` and `seth` instructions.
+Used for I-Mode instructions.
+
+
+[^reserved-bit]:
+    You may want to define a meaning for the reserved bits when you
+    implement an extension to the base ISA.
+
+[^dest-reg]:
+    All instruction in QuAC except for `str` write a result to a
+    destination register, except for `str` which uses `rd` as the
+    data to store to memory. While a little confusing, this makes
+    the implemention in hardware a bit easier to deal with.
+
+
+
+<!-- 
+## Pseudo-Instructions
+
+These instructions are special cases of instruction that already exist in
+the ISA, but make writing assembly a bit easier. By implementing the base
+ISA instructions, the pseudo-instructions are obtained for free.
+
+
+| Syntax               | Meaning               | Machine Code             |
+|----------------------|-----------------------|--------------------------|
+| `mov{z} rd, ra`      | `rd := ra`            | `1000 z<rd> 0<ra> 0000`  |
+| `jpr{z} ra`          | `pc := ra`            | `1000 z111  0<ra> 0000`  |
+| `cmp{z} ra, rb`      | `ra - rb`             | `1001 z000  0<ra> 0<rb>` |
+| `nop`                | Do nothing            | `0000 0000 0000 0000`    |
+| `jpm{z} [ra]`        | `pc := [ra]`          | `0101 z111 0<ra> 0000`   |
+| `jp{z} imm8`         | `pc := imm8`          | `0000 z111   <imm8>  `   |
+| `jp{z} <label>`      | `pc := <label>`       | Up to the assembler      |
+
+The compare instruction `cmp` is useful for comparing the values
+between two registers. It is synthesised as a subtraction with `rz` as the
+destination register (`cmp{z} ra, rb` is equivalent to `sub{z} rz, ra, rb`),
+which means the result of the subtraction is discarded, but the flags are still set.
+
+```quac
+cmp r1, r2   ; if r1 == r2:
+movlz r3, 1  ;     r3 = 1
+``` -->
+
+
+### Flag Register
+
+<!-- The base ISA leaves undefined the effect of writing directly to the flag register,
+but the flag register is updated based on the result of the last instruction executed.
+Only ALU instructions (ADD, SUB, AND, ORR) that were successfuly executed modify the
+flag register. All other instructions (movl, seth, ldr, str) leave the flag register unchanged. -->
+
+* The flag register **may be read** from like any other register.
+* **Writing** to the flag register is **undefined** behaviour.[^flag-write]
+* The flag register is **written to by** the flags **the ALU** generated,
+**whenever** any ALU instruction
+**(ADD/SUB/AND/ORR)** is **executed**[^flag-cond]. If any other instruction
+is executed, the ALU is ignored and flag register should be left unchanged.
+* The **register code** for the flag register is `101`, with
+**mnemonic** `FL`.
+* The flag register is **16 bits wide**, and the flags are stored as follows.
+
+| x | x | x | x | x | x | x | x | x | x | x | x | V | C | N | Z |
+| - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - |
+| 15| 14| 13| 12| 11| 10| 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+
+
+[^flag-write]:
+    Though you may allow this if it makes implementtion easier for you.
+
+[^flag-cond]:
+    This matters for conditional execution. Executing `addz r1, r2, #2` should
+    have no effect on the flags if the `Z` bit in the flag register is cleared.
+
+### Condition Codes
+
+* **Z (Zero)** This bit is set if the result of the previous operation result was zero (all bits are zero)
+* **N (Negative)** This bit is set if bit 15 of the previous operation result was one (the number is negative when interpreted as a signed 16-bit number using two’s complement. )
+* **C (Carry)** Set in the following ways:
+    - For an addition, C is set to 1 if and only if the addition produced a carry (an unsigned overflow)
+    - For a subtraction, C is set to 1 if and only if the subtraction produced a borrow (an unsigned underflow)
+    - For non-addition/subtraction ALU operations, set to zero.
+* **V (oVerflow)** Set in the following ways:
+    - For addition or subtraction, V is set to 1 if and only if the arithmetic operation produced a signed overflow (interpreting the operands and result as two’s complement signed integers)
+    - For non-addition/subtraction ALU operations, set to zero.
+
+
+The base ISA only supports conditional execution with the zero flag,
+but other conditions can be emulated in software by reading out the bits in the flag
+register manually, or by adding extensions to the ISA.
+
+```quac
+                 ; conditional jump on the carry bit
+movl r1, 0b100   ; mask for the carry bit
+orr rz, fl, r1   ; bitwise OR the mask with the flag, sets Z flag
+jpz <label>      ; if carry was set, Z is now set, jump
+
+                 ; conditional jump greater than
+                 ; greater than: Z = 0 and N = 0
+movl r1, 0b11    ; mask for Z and N
+orr rz, fl, r1   ; bitwise OR the mask with flag, sets Z flag
+jpz <label>      ; if greater than, jump
+```
+
+</details>
+
+### QuAC Commandments
+There were several trade-offs made at the lower level that could really have gone another way, but the heart of the design came from several untouchable constraints that we then optimized with respect to:
+* **RISC, not CISC**: The ISA should be as simple as possible, with as few instructions as possible, while still being not too unyielding to write code for. As many instructions as possible should be synthesised from the base instructions. The two key tricks here are
+    1. The zero register `rz` that always reads as zero, and writing has no effect.[^zero-reg]
+    2. The program counter `pc` is also a general purpose register, and may be read from, or written to, just like any other register.[^pc-gp]
+        * Assigning a code to the zero register may seem like a waste, but it allows for many other instructions to be easily defined by abusing `rz` either as a source for the number zero, or to act as a `/dev/null` to write a result to when it's not needed. Examples include:
+            * Register Move[^flag]  `mov rd, ra` = `add rd, rz, ra`
+            * No-operation `nop`=`movl rz, 0` 
+                * which conveniently also has the machine code `0x0000` and doesn't affect the flags.[^zero-instruction]
+            * Register clear[^flag]  `clear rd` = `add rd, rz, rz` 
+            * Compare `cmp rd, ra` = `sub rz, rd, ra`
+            * Direct jump `jp rd` = `mov pc, rd`
+            * Indirect jump `jp [rd]` = `ldr pc, rd`
+            * Sneaky arbitrary jump[^arbitrary-jump] `jp imm16` = `ldr pc, [pc+1]; imm16` 
+ * **Uniformity of encoding**: Instruction encoding is fixed-width, every instruction is stored as one word (16-bits). This means
+    * The machine code is easy to read, every instruction is exactly 4 hex digits long.
+    * We need not consider how much memory to read for the current instruction.
+    * Machine is easy to design with single-cycle execution.
+* **Single cycle execution**: Each and every instruction executes on the rising edge of the clock, and takes only one clock cycle to execute.
+     * The decoder is relatively simple to design
+        * In a more typical design, each instruction would decode as several microcode instructions, which are stored in a microcode ROM (or the control unit itself would have state). The CPU would contain a sequencer (a ring counter fed by the main system clock) that directs the machine whether to fetch, decode or execute. We dodge this entirely: the control unit is stateless, and directly maps from the instruction to the control signals.
+    * This did require telling a small white-lie and using a magic "dual port" RAM block, that allows for reading from one location, while reading/writing to another, on the same clock edge, which was an acceptable compromise from reality (the design is in the CPU, not in the RAM!).
+* **Assembling is easy**: The ISA is simple enough that assembly can easily be mentally converted to machine code, and with little effort the machine code can be directly read as if it was assembly.
+    * Nibble aligning the register codes did the trick here, you only need to memorize the op-code for each instruction, and the encoding of the operands is obvious.
+    * It also gives a very obvious correspondance between assembly and the assembled machine code.
+* **Modularity**: The CPU should be clearly divisible into separate parts that can be designed and tested in isolation before being brought together. To ease design, sequentual circuits should be avoided as much as possible unless they are required for operation. To this point, only the register file is sequential, whereas the ALU and control unit are purely sequential circuits.
+    * Building the register file and the ALU are seperate labs, with their own tests, so we're not building a CPU atop potentially faulty components
+    * The control lines are manually controlled at first to motivate their use, and only after that are students asked to design the control unit. This requires decomposing an instruction into the effects on the control lines, but doesn't require something as complex as a sequencer or microcode, which we wanted to avoid.
+
+### Course Design Principles
+The core design principles of the course were:
+* **Pedagogy over realism, hardware over software**: If violating standard CPU design or making the ISA more annoying to write assembly for meant the hardware implementation was easier, that was what was prioritised.
+    * The exact ISA encoding was changed several times over, as in through constructing the control unit, I would often find a simplification that could be made *if only* the ISA was slightly different, and then retroactively making the change. The benefit of this is that building QuAC is suspiciously elegant: Everything nicely fits together, and the logical expressions for each control signal simplify like a maths assignment rigged from the start so nice numbers pop out at the end.
+    * The critical data path is extremely long as a result of enforcing single cycle execution. This is fine, as now there's plenty of bottlenecks to talk about, which motivates pipelining. 
+* **Liberal use of abstraction**: A circuit is designed, put in a box, and then the box is used to build bigger circuits. 
+    * Individual components can be tested in isolation, and then once trusted, encapsulated in a box and treated as atomic. 
+    * The best example of this: the register file has 6 level of nested abstraction:
+        * Logic gates -> SR Latch -> Gated SR Latch -> JK flip-flop -> JK flip flop with enable = register -> Register file
+    * The first lab drives this point home: Using gates to build a 2 input 1-bit multiplexer, and then extending to 4 input 4-bit multiplexer with liberal use of copy-pasting the base multiplexer.
+* **No magic anywhere in the machine**: Every single component of the CPU is either a logic gate, or a circuit comprised of components. While large parts of the final machine use pre-defined black boxes (adders, registers) for the sake of integration with the simulator used, each black box is constructed at some point during the course, and *in principle* the black boxes could be avoided so that every gate is visible while the machine operates (though the simulation would obviously be rather sluggish). 
+* **Data is code, code is data**: The machine is a von-Neumann design. The program memory and the data memory is the same memory, and can be arbitrarily written to at will (allowing self-modifying code). Obviously, we wouldn't want this for a real ISA, but for one designed for teaching, this opens up a lot of teaching opportunities.[^self-modify-code]
+* **Necessity is the mother of invention**: The base ISA as provided is deliberately painful to write code in. This was by design: motivating students to extend the CPU to add features that make it easier to deal with. Some extensions[^secret] fit perfectly into the existing ISA table[^fit-perfect].
+    * There are only four general purpose registers.[^accumulator]
+    * Lack of an easy way to increment or decrement a register.
+    * No clear way to jump to an arbitrary address without clobbering a register in the process. 
+    * None of the ALU instructions allow immediate values.
+        * This makes incrementing/decrementing annoying, as well as bit masking, as an additional instruction is wasted clobbering a register to load the immediate value. If you want to do `add r1, 1` you have to do
+        ```
+        movl r2, 1
+        add r1, r1, r2
+        ```
+        instead, destroying the contents of `r2` in the process.
+    * Explicit stack is missing, no instructions allow for calling/returning functions. 
+        * A stack can be emulated in software, but requires all stack operations to be handled manually, as well as losing a register to act as stack pointer.
+        * Deliberately, no calling convention is provided either. Students can design their own if they wish to add function calls.
+    * No base+offset addressing, so `ldr r1, [r2+4]` requires an additional instruction to load the offset into a register first (and then clobbering that register in the process).
+    * No interrupts.
+    * No I/O.
+    * No exception handling. The behaviour of executing an instruction not defined in the base ISA is undefined.
+        * This means that the behaviour of an undefined instruction can be chosen to be whatever makes the hardware easiest to build.
+    * No logical shift/rotate or dedicate bit testing instructions.
+        * This makes bit manipulation as well as multiplication awkward.
+    * Can only conditionally execute on the zero flag.
+* The spec is as permissive as possible:
+    * The machine can have any behaviour for an undefined instruction, allowing a lot of freedom to simplify logical expressions for the control unit using Karnaugh maps.
+    * Writing to the flag register (`fl`) is undefined.
+        * Makes the base implementation easier, don't have to worry about anything else writing to the flag register other than the flags from the ALU.
+        * `fl` can be extended to be made general purpose (presumably if `fl` is the destination register, this takes precedence over whatever the flag signals were generated), giving you more room to work with if you don't care about flags, or it means the register code could be shared with a write-only register (maybe some sort of output device?)
+        * Can define writing to `fl` in some wacky way: Maybe it truncates and writes to the top 12 bits only, preserving the flags? Maybe it performs some intermediate calculation before doing so?
+    * The top 12 bits of `fl` are undefined to read from (meaning reading from `fl` is possible, but the upper 12 bits could be any value.) This means we can hide all sorts of stuff in those 12 bits without breaking backwards compatibility:
+        * Extra flags or status bits 
+            * parity, exception handling, interrupts?
+        * An extra place to hide intermediate values for complex instructions like `mul` or `div`?
+        * Can hide a 12-bit stack pointer there, and save the last register code for something else?
+        * Status bits that radically change the behaviour of the machine. It would be within the letter but not the spirit of the spec to have one of the bits in the flag register mean the entire ISA is interpreted differently, or extra hardware is enabled.[^i-hate-you]
+            * Shadow registers? 
+            * Memory paging? 
+            * Put the CPU into supervisor mode where values can be manually poked into registers via auxiliary inputs?
+            * Enable interrupts?
+            * Enable multi-threaded mode?
+
+[^secret]: No, I won't tell you which!
+[^fit-perfect]: Almost as if they were present in an older prototype of QuAC, but were stripped out to make the base ISA easier to implement.
+[^i-hate-you]: You could have one of the bits mean "interpret all the instructions as if they were x86" or some other unhinged ISA, and then have a secret instruction that sets that bit, and then the CPU is now an x86 emulator. This would be a terrible idea, but it's within the rules of the spec. Don't do this.
+
+
+
+### Regrets
+I have few regrets for the design decisions that were made, and am happy with the trade-offs that we did do, but there are a few things I wish we had chosen differently.
+
+* Undefine a large block of address space, leaving room for special reserved memory addresses that can do neat hardware things.
+    * This can still be done, so long as the memory can still be written to and read from like normal memory. Allocating a block of memory for a framebuffer linked to a screen is legal, so long as you can still use the framebuffer as generic scratch memory.
+    * The one thing you can't do (which I regret) is allocate off a block of memory for a ROM that allows some sort of bootstrap program to run on boot.
+* The use of a word (16-bits) as the smallest addressable unit.
+    * At the time I advocated pretty hard for this (it makes single cycle execution easy and it simplifies a lot of problems with decoding), but it loses an opportunity to teach about endianness.[^compiler]
+    * How do you put a string into memory? Do you pack them in two characters in a word? Or does each character receive it's own word?
+    * What would be more ideal would be to have memory banked into two chips, each with capacity 64 KiB = 65536 bytes. One stores the high byte (called HRAM) and the other the low byte of memory (called LRAM). When fetching an instruction, we feed `pc` to HRAM and `pc+1` to LRAM[^endian], and then `pc := pc + 2` after every instruction is successfully executed. Every instruction then occupies exactly two bytes in memory.
+        * This means you can ask fun questions like "what happens if we load from an odd-numbered address?"
+        * You can also then write separate `ldb` and `ldw` instructions that load just a byte, or a full word.
+        * It halves the amount of memory from the current design from 128 KiB to 64 KiB, but who cares, nobody was going to use anywhere near that much memory anyway. If they were, they can add memory paging as an extension, or some magic instruction that uses two registers together to address 32-bits, or something like that.
+* Having the machine start executing from memory address `0x0000`.
+    * It's common for old-school machines to do this, but given the annoyance of jumping to addresses outside the range `0x0000` - `0x00FF` it's common to have an interrupt vector table or other special reserved memory there, and/or forbid interaction with memory address `0x0000` to allow for null pointers.
+    * Often the first instruction on old machines is to jump over the interrupt vector table. I think we can just do the same here.
+* Not having a clean way to jump to an arbitrary 16-bit address while adhering to single-cycle execution, and fixed length word instructions.
+    * Currently, to jump to memory address `0xABCD` in the base spec, the obvious thing to do is
+    ```
+    movl r4, 0xCD
+    seth r4, 0xAB
+    add pc, rz, r4  ; move pc to r4
+    ```
+    which is unsatisfying (takes three cycles, and clobbers a register). Perhaps it's fine leaving it like this, as it can be fixed in an extension. 
+* In general, loading an arbitrary 16-bit address into a register is awkward.
+    * Maybe that's fine, it's awkward in lots of ISAs (you usually have a psuedo instruction that puts the immediate value somewhere special in memory, and reads it out.)
+* Currently the entire bank of instructions `0b0000 x000 xxxx xxxx` execute as a `no-op` (do nothing). This is wasteful. The spec should be redefined such that: 
+    * `0x0000` encodes the `no-op` instruction.
+    * `0b0000 0000 imm8` for all `imm8 != 0x00` is undefined
+    * `0b0000 1000 imm8` for all imm8 is undefined.
+
+    It changes nothing for implementing the base machine, you can just treat decode `0000 z000 <imm8>` as `movl{z} rz, imm8` as you currently do, and that would be within spec, as `movl rz, 0x00` is a `nop` anyway.
+    There's reason you'd ever want to move an immediate into the zero register other than to waste an instruction cycle (it has zero side effects, flags are unchanged, ect.), which is often useful, but we waste the other 511 instructions of the form  `0b0000 x000 xxxx xxxx` on nop as a result. This now gives you an extra 511 unconditional zero-operand instructions, or another 255 conditional zero-operand instructions, or some combination of instructions with operands if you want to subdivide the imm8 region further. This could add things like halt execution, enable/disable interrupts, call, return, ect.
+
+[^endian]: Or `pc+1` to HRAM and `pc` to LRAM?
+[^hardware]: What we ended up with would be pretty monstrous to *actually* construct physically, either from a truckload of 7400-logic ICs or worse still, from transistors. (The liberal use of several 16-bit multiplexers really adds to the gate count). However, assuming an ~infinite supply of gates, and the ability to construct a circuit from gates, wrap it in a box, and abstract the insides away, this CPU is very straightforward to construct either in a GUI logic gate simulator, or in some HDL for an FPGA.
+[^accumulator]: In retrospect, would it have been better to go for an accumulator based design? It would have still maintained the other design principles, but then it would have been harder to transition to the second half of the course, which uses ARM (and has general purpose registers galore).
+[^self-modify-code]: Turns out this plays havoc with anyone trying to build a pipelined version of QuAC, where it is assumed program memory and data memory are separate. It's hard enough to pipeline with shared memory, let alone when self-modifying code is a possibility. My apologies to those in [COMP3710](https://comp.anu.edu.au/courses/comp3710-uarch/) who were tasked with this. Whoops. 
+[^flag]: With the annoying caveat that these psuedo instructions are technically ALU operations, and would tamper with the flags.
+[^pc-gp]: Turns out this is also relatively unorthodox, and while it means you can do silly shenanigans with the control flow of a program, it is a nightmare to resolve the additional pipeline hazards. Whoops. Normally, `pc` does not receive a register code, and can only be modified by special instructions (`jump`, `call`,`ret` etc). This also consumes an additional register code, but the teaching moments it gives are worth it.
+[^arbitrary-jump]: Assuming the `ldr` instruction is extended to allow for offsetting by an immediate (or at least offsetting by one). This is very much a dirty trick, as we're essentially shoehorning a multi-word instruction into a machine that has fixed-width instructions. The instruction `ldr pc, [pc+1]` loads the value of the next memory slot and overwrites `pc`, and the next value in memory just so happens to be the address that you want to jump to! This dodges the problem of designing an instruction that fits in 16-bits, while also allowing an arbitrary jump to any 16-bit address.
+[^zero-reg]: This also allows for the opportunity to have writing to the zero register to have some additional stateful effect, that extension instructions could interact with. Of course, base instructions couldn't have changed behaviour, as this would violate backwards compatibility.  
+[^zero-instruction]: I think it's good practice for the instruction with machine code `0x0000` to be `nop` or `halt` or throw an exception or something along these lines.
+[^compiler]: I've also been told it makes it difficult to write a compiler that targets QuAC, as most tooling assumes byte addressable memory.
+
+<div style="margin: 40px 0;">
+    <hr style="height:4px;border-width:0;color:gray;background-color:gray">
+</div>
