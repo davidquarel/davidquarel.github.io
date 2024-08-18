@@ -97,14 +97,18 @@ Attending the [MLAB2022](https://www.redwoodresearch.org/mlab) program run by Re
 
 [^agisf]: [AGISF](https://aisafetyfundamentals.com/) somewhat solves this, though a textbook it isn't.
 
-<!-- [tutor]([[2024-02-04-Reflections-on-teaching]]) -->
-<!-- [co-designing a toy CPU ISA]([[2024-03-26-The-optimal-teaching-ISA]]) -->
+{% comment %}
+[tutor]([[2024-02-04-Reflections-on-teaching]])
+[co-designing a toy CPU ISA]([[2024-03-26-The-optimal-teaching-ISA]])
+{% endcomment %}
 
 #### From Tutor to Course Coordination 
 Doing things in my job as a [tutor](/404.html) that's usually beyond the scope of the job: Being actively involved in the high-level decision-making of course content.
 * The most enjoyment I had doing this was [co-designing a toy CPU ISA](/404.html) from scratch, still used to this day.
 * Teaching a course I had not taken before[^toc] was also very enjoyable: I'd attend the lectures with students, and then deliver the tutorial on the content a few days later. The short recurrent deadlines forced me to absorb the material quickly not just to the point where I could understand it, but then teach it to someone less familiar so they could [learn the material faster](/404.html) than I did. 
-<!-- [learn the material faster]({% post_url 2024-07-17-On-effective-pedagogy %}) -->
+{% comment %} 
+<!-- [learn the material faster]({% post_url 2024-07-17-On-effective-pedagogy %}) --> 
+{% endcomment %}
 * I got to lecture for a week! But before I did, COVID spread to Canberra and the university kicked us all home, so I delivered it online from my bedroom. Not so fun.
 * I got to make/co-make YouTube channels for [first year theoretical comp](https://www.youtube.com/@COMPFoundationofComputing)/[engineering maths](https://www.youtube.com/@ENGNVideos) courses. I look back and cringe a bit at the low budget production[^recording] quality[^recording2], but people still watch it and find it useful, so that's good enough for me.
 
@@ -162,7 +166,9 @@ Trimming possessions down to what will fit in a ~~suitcase~~ hiking backpack + a
 Spending a large part of my studies on abstract nonsense pure mathematics, which ended up being far more useful than I could have known. Expanded to its own post.
 
 #### [Cycling](/404.html) 
+{% comment %} 
 <!-- {% post_url 2024-02-04-Get-a-bike %}  -->
+{% endcomment %}
 Picking up road cycling, and using it as my main form of transport. Expanded to its own post.
 * I didn't know it at the time, but this is the ideal way to get around the UK. I can cycle around the city itself, and take me + my bike between cities on the national rail. It's definitely the fastest way to get around (at least in Cambridge + central London).
 
@@ -175,7 +181,9 @@ Trying (and somewhat succeeding) at learning Chinese + how to play the piano.
 * The utility in learning these was more confirming for myself that I'm not too old for the neural plasticity to go away, rather than any use that Chinese or piano skills has to be directly (which, admittedly, isn't that much.)
 	* EDIT: Actually, limited Chinese skills was actually a little bit useful for a research project I've been working on regarding 
 	the [language of the latent space](/404.html) of models. Still haven't found any use for piano, but I'll let you know. 
+{% comment %} 
 <!-- [language of the latent space]({% post_url 2024-03-26-LLM-language-latent-space %}) -->
+{% endcomment %}
 
 #### Writing 
 Hopefully getting into the habit of writing more often? This blog is probably going to be garbage/raw stream of consciousness, but that's okay. Because I'm doing *the thing*[^did-you-do-the-thing], and hopefully this is the first bad post in what would be hopefully a list of progressively less bad posts[^writing].
