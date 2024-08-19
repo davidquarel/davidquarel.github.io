@@ -1,7 +1,7 @@
 ---
 layout: post
 title: An optimal ISA for teaching
-date: 2024-03-26 09:00:00 +1100
+date: 2024-03-26
 categories: jekyll update
 tags:
   - ramble
