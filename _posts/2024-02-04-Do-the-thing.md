@@ -1,7 +1,6 @@
 ---
-layout: post
 title: Do the thing
-date: 2024-02-04 09:00:00 +1100
+date: 2024-02-04
 categories: jekyll update
 tags:
   - ramble
@@ -50,6 +49,7 @@ There's a few reasons that I tell myself. I leave it to you to decide which are 
 2. It's worth some signalling points to write down a list of achievements and put it on a website[^meta].
 3. Having a list of things that I did helps to remind myself that I am making forward progress when it feels like I'm not.
 4. I want to stop past-me from making the mistakes he made (mostly a function of poor trade-offs between exploration (not enough) and exploitation (too much)). Can't do much about that. Maybe someone else can learn from the things I should have done earlier, and crib from my list to avoid learning it the hard way.
+5. Writing something makes writing more things easier. Look at all the links below that [404](/404.html)! They're like little seeds for future posts that I think about at the time when writing something else (like this document), and so by adding a (currently broken) link, it commits me to writing that post eventually.
 
 
 [^meta]: Is it worth even more meta-signalling points to write in a self-deprecating tone rather than the tone one would use on a cover letter to present one's best self? Ehhhh maybe? But that would take all the fun out of it for me, so even if it's not best practice (much like my copious use of footnotes), I'm going to write it the way I want to write it anyway.
@@ -99,12 +99,11 @@ Attending the [MLAB2022](https://www.redwoodresearch.org/mlab) program run by Re
 
 {% comment %}
 [tutor]([[2024-02-04-Reflections-on-teaching]])
-[co-designing a toy CPU ISA]([[2024-03-26-The-optimal-teaching-ISA]])
 {% endcomment %}
 
-#### From Tutor to Course Coordination 
+#### From Tutor to Course Coordination
 Doing things in my job as a [tutor](/404.html) that's usually beyond the scope of the job: Being actively involved in the high-level decision-making of course content.
-* The most enjoyment I had doing this was [co-designing a toy CPU ISA](/404.html) from scratch, still used to this day.
+* The most enjoyment I had doing this was [co-designing a toy CPU ISA]({% post_url 2024-03-26-The-optimal-teaching-ISA %}) from scratch, still used to this day.
 * Teaching a course I had not taken before[^toc] was also very enjoyable: I'd attend the lectures with students, and then deliver the tutorial on the content a few days later. The short recurrent deadlines forced me to absorb the material quickly not just to the point where I could understand it, but then teach it to someone less familiar so they could [learn the material faster](/404.html) than I did. 
 {% comment %} 
 <!-- [learn the material faster]({% post_url 2024-07-17-On-effective-pedagogy %}) --> 
