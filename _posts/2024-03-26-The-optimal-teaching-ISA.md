@@ -476,6 +476,4 @@ I have few regrets for the design decisions that were made, and am happy with th
 [^zero-instruction]: I think it's good practice for the instruction with machine code `0x0000` to be `nop` or `halt` or throw an exception or something along these lines.
 [^compiler]: I've also been told it makes it difficult to write a compiler that targets QuAC, as most tooling assumes byte addressable memory.
 
-<div style="margin: 40px 0;">
-    <hr style="height:4px;border-width:0;color:gray;background-color:gray">
-</div>
+{% include bar.html %}

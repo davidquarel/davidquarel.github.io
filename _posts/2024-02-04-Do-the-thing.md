@@ -190,9 +190,6 @@ Hopefully getting into the habit of writing more often? This blog is probably go
 
 [^writing]: and it's certainly more constructive than just scrolling brain-rot on my phone, which I'm trying to wean myself out from doing. EDIT: Still working on that one 😢.
 
-<div style="margin: 40px 0;">
-    <hr style="height:4px;border-width:0;color:gray;background-color:gray">
-</div>
 
 [^did-you-do-the-thing]: did you? 
 
@@ -207,11 +204,5 @@ message="I do so solemnly swear that I have made a good faith attempt to do <em>
 
 [^javascript]: and it ruins the ordering of the footnote numbers. Look what you made me do.
 
-
-<div style="margin: 40px 0;">
-    <hr style="height:4px;border-width:0;color:gray;background-color:gray">
-</div>
-
-
-
+{% include bar.html %}
 
