@@ -227,4 +227,11 @@ figure out how to do what you want, and often you can just write raw
 markdown, and then get the LLM to wrap it in whatever Streamlit magic
 is needed to make it work.
 
+**I keep forgetting to push all my dependencies and then my site breaks!**
+
+Worry not! I solved this problem by adding a git pre-commit hook that
+scans all my posts for any untracked dependencies and prints an angry
+message if it finds any. You can see the script
+[here on GitHub](https://github.com/davidquarel/davidquarel.github.io/blob/main/files/pre-commit.py).
+
 {% include bar.html %}
