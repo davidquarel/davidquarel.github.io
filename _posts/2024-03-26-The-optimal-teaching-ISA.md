@@ -375,6 +375,14 @@ The core design principles of the course were:
 * **Pedagogy over realism, hardware over software**: If violating standard CPU design or making the ISA more annoying to write assembly for meant the hardware implementation was easier, that was what was prioritised.
     * The exact ISA encoding was changed several times over, as in through constructing the control unit, I would often find a simplification that could be made *if only* the ISA was slightly different, and then retroactively making the change. The benefit of this is that building QuAC is suspiciously elegant: Everything nicely fits together, and the logical expressions for each control signal simplify like a maths assignment rigged from the start so nice numbers pop out at the end.
     * The critical data path is extremely long as a result of enforcing single cycle execution. This is fine, as now there's plenty of bottlenecks to talk about, which motivates pipelining. 
+
+<figure style="text-align: center;">
+<img src="{% link assets/images/quac/data_path.png %}" alt="QuAC Critical Path">
+<figcaption style="margin-top: 10px;">Figure 2: Critical path for a LDR instruction. PC fetches instruction from memory, control unit decodes and tells register file to output register on address bus, we fetch yet another piece of data from memory and store back in the register file. The machine is <i>begging</i> to be <a href="https://en.wikipedia.org/wiki/Classic_RISC_pipeline">pipelined.</a>
+</figcaption>
+</figure>
+
+
 * **Liberal use of abstraction**: A circuit is designed, put in a box, and then the box is used to build bigger circuits. 
     * Individual components can be tested in isolation, and then once trusted, encapsulated in a box and treated as atomic. 
     * The best example of this: the register file has 6 level of nested abstraction:
