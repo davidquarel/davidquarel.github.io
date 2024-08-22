@@ -31,8 +31,12 @@
 
           
         <div class="footer-col footer-col-3">
-          <p>Last Update: {{ site.time | date: "%Y-%m-%d" }}</p>
-        </div>
+            <div style="line-height: 1.2; margin-bottom: 0;">
+              <p style="margin: 0;">Last Update:</p>
+              <p style="margin: 0;">{{ site.time | date: "%Y-%m-%d" }}</p>
+              <p style="margin: 0;">{{ site.time | date: "%H:%M:%S" }}</p>
+            </div>
+          </div>
 
       </div>
   
