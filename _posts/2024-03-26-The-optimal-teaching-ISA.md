@@ -1,10 +1,7 @@
 ---
 title: An optimal ISA for teaching
 date: 2024-03-26
-categories: jekyll update
-tags:
-  - ramble
-  - "#cpu"
+tags: ramble cpu teaching
 ---
 In late 2022, a course convener that I had worked under before on other courses offered me a job to help radically redesign a course from the ground up. This course was on [computer architecture](https://en.wikipedia.org/wiki/Computer_architecture), and the goal was for students to build a CPU from scratch, treating logic gates as the smallest atomic unit[^atomic]. Instead of taking an off-the-shelf existing ISA, or implementing a subset of ARM or 8086 which is often done, we decided to built something bespoke: QuAC[^quac], a CPU optimized specifically for the goal of being relatively simple to construct in hardware[^hardware] while still being a reasonable ISA for writing programs in, leaving a lot of room for extensions. This is a post-mortem of the machine, with some colour commentary of what I would have done differently, and design decisions that were made.
 

@@ -1,9 +1,7 @@
 ---
 title: Do the thing
 date: 2024-02-04
-categories: jekyll update
-tags:
-  - ramble
+tags: ramble
 ---
  **Do the thing**.[^agency] Whatever *the thing* is you've been thinking about doing, go. **DO IT NOW**. It's okay, I'm a blog post, a text file sitting on a server
  with infinite patience. I'll still be here when you come back[^server]. 

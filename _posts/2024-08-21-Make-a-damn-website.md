@@ -1,9 +1,7 @@
 ---
 title: Go make a website
 date: 2024-08-21
-categories: jekyll update
-tags:
-  - ramble
+tags: ramble
 ---
 
 **TL;DR I'm lazy and just want to steal your website.**
