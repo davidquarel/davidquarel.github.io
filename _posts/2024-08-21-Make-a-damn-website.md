@@ -202,7 +202,7 @@ in the page source<!-- like this one! -->, so be careful with those. Comments
 using the liquid syntax `{% raw %}{% comment %}...{% endcomment %}{% endraw %}`
 {% comment %} like this one {% endcomment %}are not visible in the page source,
 but you can still see them in the 
-[raw markdown file](https://github.com/davidquarel/davidquarel.github.io/blob/main/_posts/2024-07-14-Make-a-damn-website.md#L206) on GitHub.
+[raw markdown file](https://github.com/davidquarel/davidquarel.github.io/blob/60f7ea6ece718e5e64c69dca590e96b16be73668/_posts/2024-08-21-Make-a-damn-website.md?plain=1#L203) on GitHub.
 
 The downside is that it breaks the utterances commenting system, as it can't
 access the private repository. My solution is I just keep my draft posts that I'm
