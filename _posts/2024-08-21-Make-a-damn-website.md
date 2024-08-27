@@ -181,7 +181,7 @@ Okay here's where I ran into a bit of trouble working this one out to get MathJa
 so credit to [Shawn Ligocki](https://www.sligocki.com/), I just copied [his website](https://github.com/sligocki/sligocki.github.io),
 stripped out all his content, and replaced it with mine. The specific files you want 
 are [`_includes/custom-head.html`](https://github.com/sligocki/sligocki.github.io/blob/main/_includes/custom-head.html)
-and [`_includes/head.html`](https://github.com/sligocki/sligocki.github.io/blob/main/_includes/head.html). Now I can include either inline LaTeX with `\$\$ ... \$\$` like this: $$\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}$$
+and [`_includes/head.html`](https://github.com/sligocki/sligocki.github.io/blob/main/_includes/head.html). Now I can include either inline LaTeX with `$$ \sum_{n=1}^\infty \frac{1}{n^2} = \frac{\pi^2}{6} $$` which renders as: $$\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}$$
 
 [^do_stuff]: Maybe this will work. Maybe it won't. No guarantees. ¯\\\_(ツ)\_/¯
 [^javascript]: Sadly this will likely require some JavaScript, which I haven't learned and hope to avoid for as long as possible. 
