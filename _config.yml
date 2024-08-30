@@ -31,7 +31,7 @@ theme: minima
 plugins:
   - jekyll-feed
 
-google_analytics_g4: G-KM9QQVR1GN
+google_analytics: G-KM9QQVR1GN
 
 
 defaults:
