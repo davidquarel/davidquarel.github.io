@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CartPole JavaScript Implementation</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        #instructions, #state-info {
+            margin-top: 20px;
+        }
+        .out-of-bounds {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cartpoleCanvas" width="600" height="400"></canvas>
+    <div id="instructions">
+        <p>CartPole-v0 - Left/Right to control Cart - Q to quit, R to reset - F/S for faster/slower</p>
+    </div>
+    <div id="state-info">
+        <p>Position: <span id="position"></span></p>
+        <p>Velocity: <span id="velocity"></span></p>
+        <p>Angle: <span id="angle"></span></p>
+        <p>Angular Velocity: <span id="angular-velocity"></span></p>
+        <p>Accumulated Reward: <span id="reward"></span></p>
+    </div>
+    <script>
+        class CartPoleEnv {
+            constructor() {
+                this.gravity = 9.8;
+                this.masscart = 1.0;
+                this.masspole = 0.1;
+                this.total_mass = this.masspole + this.masscart;
+                this.length = 0.5;
+                this.polemass_length = this.masspole * this.length;
+                this.force_mag = 10.0;
+                this.tau = 0.02;
+                this.theta_threshold_radians = 12 * 2 * Math.PI / 360;
+                this.x_threshold = 2.4;
+                this.state = null;
+                this.accumulated_reward = 0;
+            }
+
+            step(action) {
+                let [x, x_dot, theta, theta_dot] = this.state;
+                let force = action === 1 ? this.force_mag : -this.force_mag;
+                let costheta = Math.cos(theta);
+                let sintheta = Math.sin(theta);
+
+                let temp = (force + this.polemass_length * theta_dot ** 2 * sintheta) / this.total_mass;
+                let thetaacc = (this.gravity * sintheta - costheta * temp) / (this.length * (4.0 / 3.0 - this.masspole * costheta ** 2 / this.total_mass));
+                let xacc = temp - this.polemass_length * thetaacc * costheta / this.total_mass;
+
+                x = x + this.tau * x_dot;
+                x_dot = x_dot + this.tau * xacc;
+                theta = theta + this.tau * theta_dot;
+                theta_dot = theta_dot + this.tau * thetaacc;
+
+                // Normalize theta to be between -π and π
+                theta = ((theta + Math.PI) % (2 * Math.PI)) - Math.PI;
+
+                this.state = [x, x_dot, theta, theta_dot];
+
+                let done = Boolean(
+                    x < -this.x_threshold ||
+                    x > this.x_threshold ||
+                    theta < -this.theta_threshold_radians ||
+                    theta > this.theta_threshold_radians
+                );
+
+                let reward = done ? 0.0 : 1.0;
+                this.accumulated_reward += reward;
+
+                return [this.state, reward, done, {}];
+            }
+
+            reset() {
+                this.state = [
+                    Math.random() * 0.1 - 0.05,
+                    Math.random() * 0.1 - 0.05,
+                    Math.random() * 0.1 - 0.05,
+                    Math.random() * 0.1 - 0.05
+                ];
+                this.accumulated_reward = 0;
+                return this.state;
+            }
+        }
+
+        const canvas = document.getElementById('cartpoleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const env = new CartPoleEnv();
+        env.reset();
+
+        let action = 0;
+        let running = true;
+        const keys = {};
+
+        // EWMA smoothing
+        const alpha = 0.05; // Smoothing factor
+        let smoothedState = [0, 0, 0, 0];
+
+        function ewmaSmooth(newValue, oldValue) {
+            return alpha * newValue + (1 - alpha) * oldValue;
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw cart
+            let cartWidth = 50;
+            let cartHeight = 30;
+            let cartX = (env.state[0] / env.x_threshold) * (canvas.width / 2) + canvas.width / 2;
+            let cartY = canvas.height - 50;
+            ctx.fillStyle = 'black';
+            ctx.fillRect(cartX - cartWidth / 2, cartY - cartHeight / 2, cartWidth, cartHeight);
+            // Draw pole
+            let poleLength = 100;
+            let poleWidth = 10;
+            let poleEndX = cartX + Math.sin(env.state[2]) * poleLength;
+            let poleEndY = cartY - Math.cos(env.state[2]) * poleLength;
+            ctx.strokeStyle = 'rgb(202, 152, 101)';
+            ctx.lineWidth = poleWidth;
+            ctx.beginPath();
+            ctx.moveTo(cartX, cartY);
+            ctx.lineTo(poleEndX, poleEndY);
+            ctx.stroke();
+
+            // Draw circle at the axle
+            let axleOffset = 0; // Adjust this value if needed
+            let circleX = cartX;
+            let circleY = cartY + axleOffset;
+            let circleRadius = poleWidth / 2;
+            ctx.fillStyle = 'rgb(129, 132, 203)';
+            ctx.beginPath();
+            ctx.arc(circleX, circleY, circleRadius, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Update state info
+            updateStateInfo();
+        }
+
+        function updateStateInfo() {
+            const [x, x_dot, theta, theta_dot] = env.state;
+            
+            // Apply EWMA smoothing
+            smoothedState = smoothedState.map((oldValue, index) => ewmaSmooth(env.state[index], oldValue));
+
+            const positionElement = document.getElementById('position');
+            const velocityElement = document.getElementById('velocity');
+            const angleElement = document.getElementById('angle');
+            const angularVelocityElement = document.getElementById('angular-velocity');
+            const rewardElement = document.getElementById('reward');
+
+            positionElement.textContent = smoothedState[0].toFixed(2);
+            velocityElement.textContent = smoothedState[1].toFixed(2);
+            
+            // Convert angle to degrees and ensure it's between -180 and 180
+            let angleDegrees = (smoothedState[2] * 180 / Math.PI) % 360;
+            if (angleDegrees > 180) angleDegrees -= 360;
+            else if (angleDegrees < -180) angleDegrees += 360;
+            
+            angleElement.textContent = angleDegrees.toFixed(2) + '°';
+            angularVelocityElement.textContent = smoothedState[3].toFixed(2);
+            rewardElement.textContent = env.accumulated_reward.toFixed(2);
+
+            // Check for out-of-bounds
+            positionElement.className = Math.abs(x) > env.x_threshold ? 'out-of-bounds' : '';
+            angleElement.className = Math.abs(theta) > env.theta_threshold_radians ? 'out-of-bounds' : '';
+        }
+
+        let fps = 50; // Default FPS
+        const minFps = 10;
+        const maxFps = 100;
+
+        function gameLoop() {
+            if (!running) return;
+
+            if (keys['ArrowLeft']) {
+          action = 0;
+            } else if (keys['ArrowRight']) {
+          action = 1;
+            } else if (keys['r']) {
+          env.reset();
+          smoothedState = [0, 0, 0, 0];
+            } else if (keys['q']) {
+          running = false;
+          return;
+            } else if (keys['f']) {
+          fps = Math.min(maxFps, fps + 1);
+          keys['f'] = false; // Prevent continuous increase
+            } else if (keys['s']) {
+          fps = Math.max(minFps, fps - 1);
+          keys['s'] = false; // Prevent continuous decrease
+            } else {
+          action = 1 - action;
+            }
+
+            env.step(action);
+            render();
+
+            // Update FPS display
+            const fpsElement = document.getElementById('fps');
+            fpsElement.textContent = `FPS: ${fps}`;
+
+            setTimeout(gameLoop, 1000 / fps); // Adjust timeout based on FPS
+        }
+
+        // Add FPS display
+        const fpsDisplay = document.createElement('div');
+        fpsDisplay.id = 'fps';
+        fpsDisplay.style.marginTop = '20px';
+        fpsDisplay.textContent = `FPS: ${fps}`;
+        document.body.appendChild(fpsDisplay);
+
+        document.addEventListener('keydown', (event) => {
+            keys[event.key] = true;
+        });
+
+        document.addEventListener('keyup', (event) => {
+            keys[event.key] = false;
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
