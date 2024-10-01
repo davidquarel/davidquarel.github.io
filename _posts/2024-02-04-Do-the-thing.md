@@ -1,4 +1,5 @@
 ---
+layout: post-plain
 title: Do the thing
 date: 2024-02-04
 tags: ramble
@@ -186,6 +187,8 @@ Trying (and somewhat succeeding) at learning Chinese + how to play the piano.
 Hopefully getting into the habit of writing more often? This blog is probably going to be garbage/raw stream of consciousness, but that's okay. Because I'm doing *the thing*[^did-you-do-the-thing], and hopefully this is the first bad post in what would be hopefully a list of progressively less bad posts[^writing].
 * [Most of the code on an arbitrarily chosen repo is probably no good](https://en.wikipedia.org/wiki/Sturgeon%27s_law). Most blogs are not worth reading. That's okay. The first few posts are just to get momentum, so I can hopefully eventually write something worth reading. 
 
+{% include bar.html %}
+
 [^writing]: and it's certainly more constructive than just scrolling brain-rot on my phone, which I'm trying to wean myself out from doing. EDIT: Still working on that one 😢.
 
 
@@ -202,5 +205,4 @@ message="I do so solemnly swear that I have made a good faith attempt to do <em>
 
 [^javascript]: and it ruins the ordering of the footnote numbers. Look what you made me do.
 
-{% include bar.html %}
 
