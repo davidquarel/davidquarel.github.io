@@ -233,5 +233,3 @@ Worry not! I solved this problem by adding a git pre-commit hook that
 scans all my posts for any untracked dependencies and prints an angry
 message if it finds any. You can see the script
 [here on GitHub](https://github.com/davidquarel/davidquarel.github.io/blob/main/files/pre-commit.py).
-
-{% include bar.html %}

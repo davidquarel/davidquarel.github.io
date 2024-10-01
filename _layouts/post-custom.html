@@ -1,7 +1,20 @@
 ---
 layout: post
 ---
-{{ content }}
 
-{% include bar.html %}
-{% include utterances.html %}
+<div class="post-content">
+    {{ content | split: '<div class="footnotes" role="doc-endnotes">' | first }}
+  </div>
+  
+  {% include bar.html %}
+  
+  {% if content contains '<div class="footnotes" role="doc-endnotes">' %}
+    <div class="footnotes-wrapper">
+      <div class="footnotes" role="doc-endnotes">
+        {{ content | split: '<div class="footnotes" role="doc-endnotes">' | last }}
+      </div>
+    </div>
+    {% include bar.html %}
+  {% endif %}
+  
+  {% include utterances.html %}

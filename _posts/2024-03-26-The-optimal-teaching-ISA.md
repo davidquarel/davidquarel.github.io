@@ -482,5 +482,3 @@ I have few regrets for the design decisions that were made, and am happy with th
 [^zero-reg]: This also allows for the opportunity to have writing to the zero register to have some additional stateful effect, that extension instructions could interact with. Of course, base instructions couldn't have changed behaviour, as this would violate backwards compatibility.  
 [^zero-instruction]: I think it's good practice for the instruction with machine code `0x0000` to be `nop` or `halt` or throw an exception or something along these lines.
 [^compiler]: I've also been told it makes it difficult to write a compiler that targets QuAC, as most tooling assumes byte addressable memory.
-
-{% include bar.html %}
