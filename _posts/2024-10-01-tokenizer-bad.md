@@ -96,13 +96,15 @@ def tokenize_suffixes(suffixes : List[str], model):
 `llama-2` likes to put a special reserved start-of-sequence token `<s>` with token id `1` at the 
 start of each sequence. Good for a prompt, bad for a suffix of a prompt. No worries, use `add_special_tokens=False` for the tokenizer.
 
-**BUT** for some inexplicable reason, it also likes to prepend a space character to every sequence BEFORE tokenizing[^tok].
+**BUT** for some inexplicable reason, it also likes to prepend a space character to every sequence BEFORE tokenizing.
+
+For example, see the difference between tokenizing `hellohello`, for which the first `hello` gets (silently) preprocessed as `▁hello` and tokenized as `22172` and the second `hello` gets tokenized as `hello` (token id `12199`), versus tokenizing the emoji `🌍`, which gets preprocessed as `▁🌍`, the space character does not bind to the earth emoji, and the result is tokenized as `29871,31494` i.e. the space token `▁` with id `29871`, followed by the earth token `🌍` with id `31494`. You can play with the tokenizer [here](https://tiktokenizer.vercel.app/?model=codellama%2FCodeLlama-7b-hf).
+
+
 Okay, sure, just slice out the first column. But due to tokenizer shenanigans, depending on what the first word is, 
 the space might bind to it and tokenize as  `▁hello`, or sometimes seperately as `▁` `world`. The model internally 
 learns to do this based on the data it's seen: some words have spaces in front, some don't, and it's learned to tokenize
 based on that.
-
-[^tok]: [Try it out for yourself!](https://tiktokenizer.vercel.app/?model=codellama%2FCodeLlama-7b-hf) See the difference between tokenizing `hello`, which gets (silently) preprocessed as `▁hello` and tokenized as `22172`, whereas 🌍 gets preprocessed as `▁🌍` and tokenized as `29871,31494` i.e. the space token `▁` with id `29871`, followed by the earth token `🌍` with id `31494`.
 
 So, shit, I can't just slice it out. So, I need to find something I can add to the front that will never bind to a space. So I search through all 50k tokens in the 
 vocabulary, and by happenstance 🌍[^earth] is a single token with token id `31494`, as opposed to a sequence of utf-8 encoded bytes, which is typical for emojis.
