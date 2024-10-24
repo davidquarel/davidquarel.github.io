@@ -3,7 +3,7 @@ layout: page
 title: Contact
 ---
 
-Feel free to email me at `<firstname><lastname>@gmail.com` or message me on
+Feel free to email me at `davidquarel[at]gmail[dot]com` or message me on
 `dquarel.99` on Signal. If you want to video call or meet in person, 
 you can book me on [Calendly](https://calendly.com/davidquarel), either online or 
 in person at the 

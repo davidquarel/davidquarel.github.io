@@ -4,6 +4,13 @@ title: Now
 permalink: /now/
 ---
 
+### Update: 24th Oct, 2024
+* Still in London, still at [LISA](safeai.org.uk).
+* ARENA-4 just wrapped up a few weeks ago. [Several](https://www.lesswrong.com/posts/YhTnnKHQ5yQrAmi5p/arena4-0-capstone-hyperparameter-tuning-for-melbo) 
+[students](https://www.lesswrong.com/posts/k77qQ5J7LPr9WEuDk/interpretability-of-sae-features-representing-check-in) have [written](https://github.com/jbloomAus/SAELens/pull/317)
+up the projects they worked on, including replications of papers and contributions to open-source projects.
+* Moved to a new flat in East London.
+
 ### Update: 18th Aug, 2024
 
 * I live in London now, and I spend my time at [LISA](safeai.org.uk) on various projects. 
@@ -13,7 +20,6 @@ permalink: /now/
 * Going to try again (perhaps in futility) to make a habit of writing more often here. Have a backlog of posts to clean and publish.
 * On ~May 2024 [my book released](https://books.google.co.uk/books/about/?id=jqQIEQAAQBAJ)!
 
-{% comment %}
 ### Update: 14th June, 2023
 
 * I live in the UK now, and have been here since Feburary
@@ -22,8 +28,6 @@ permalink: /now/
 * Almost finished a [book](http://hutter1.net/ai/uaibook2.htm) I'm co-authoring, to be published soon(?)
 * Finally getting around to making a website now that large language models are good enough
 to hold my hand through the process
-{% endcomment %}
-
 
 
 [What is a now page?](https://nownownow.com/about)

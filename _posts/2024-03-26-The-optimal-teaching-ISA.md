@@ -1,4 +1,5 @@
 ---
+layout: post-custom
 title: An optimal ISA for teaching
 date: 2024-03-26
 tags: ramble cpu teaching
