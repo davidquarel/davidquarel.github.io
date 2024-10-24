@@ -1,4 +1,5 @@
 ---
+layout: post-custom
 title: Go make a website
 date: 2024-08-21
 tags: ramble
