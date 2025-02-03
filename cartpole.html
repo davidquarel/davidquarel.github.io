@@ -47,7 +47,7 @@
 
             step(action) {
                 let [x, x_dot, theta, theta_dot] = this.state;
-                let force = action === 1 ? this.force_mag : -this.force_mag;
+                let force = action === 1 ? this.force_mag : (action === 0 ? -this.force_mag : 0);
                 let costheta = Math.cos(theta);
                 let sintheta = Math.sin(theta);
 
@@ -197,7 +197,7 @@
           fps = Math.max(minFps, fps - 1);
           keys['s'] = false; // Prevent continuous decrease
             } else {
-          action = 1 - action;
+          action = 2;
             }
 
             env.step(action);
