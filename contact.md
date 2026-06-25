@@ -5,7 +5,7 @@ title: Contact
 
 Feel free to email me at `davidquarel[at]gmail[dot]com` or message me on
 `dquarel.99` on Signal. If you want to video call or meet in person, 
-you can book me on [Calendly](https://calendly.com/davidquarel), either online or 
+you can book me: [Google Caledner](https://calendar.app.google/66PgqxS5D4dijAk47) either online or 
 in person at the 
 [London Initiative for Safe AI (LISA)](https://www.safeai.org.uk/) office in London. 
 
