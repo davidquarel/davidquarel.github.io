@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b0e14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Swap Timer</title>
+<style>
+  :root{
+    --bg:#0b0e14;
+    --panel:#151a24;
+    --a:#3ddc97;      /* A = hold (green) */
+    --b:#ffb454;      /* B = swap (amber) */
+    --text:#e6ebf2;
+    --muted:#7a8699;
+    --line:#222a38;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+    display:flex;flex-direction:column;
+    min-height:100dvh;
+    overflow:hidden;
+    transition:background .25s ease;
+  }
+  body.run-a{background:#0d1a14;}
+  body.run-b{background:#1c1407;}
+
+  header{
+    text-align:center;padding:18px 16px 4px;
+    font-weight:700;letter-spacing:.18em;font-size:13px;color:var(--muted);
+  }
+
+  .display{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:6px;
+    user-select:none;
+  }
+  .phase{
+    font-size:15px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;
+    color:var(--muted);transition:color .2s;
+  }
+  body.run-a .phase{color:var(--a);}
+  body.run-b .phase{color:var(--b);}
+  .count{
+    font-size:32vw;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;
+    margin:0;
+  }
+  body.run-a .count{color:var(--a);}
+  body.run-b .count{color:var(--b);}
+  .rounds{font-size:13px;color:var(--muted);letter-spacing:.1em;}
+
+  .settings{
+    background:var(--panel);border-top:1px solid var(--line);
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+  }
+  .row{display:flex;gap:12px;margin-bottom:14px;}
+  .field{flex:1;}
+  .field label{
+    display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px;
+  }
+  .field .tag{font-weight:800;}
+  .field.a .tag{color:var(--a);}
+  .field.b .tag{color:var(--b);}
+  .stepper{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .stepper button{
+    width:46px;border:none;background:#1d2433;color:var(--text);
+    font-size:24px;font-weight:600;
+  }
+  .stepper button:active{background:#28324a;}
+  .stepper input{
+    flex:1;border:none;background:transparent;color:var(--text);
+    text-align:center;font-size:22px;font-weight:700;width:100%;
+    font-variant-numeric:tabular-nums;
+  }
+  .stepper input:focus{outline:none;}
+
+  .controls{display:flex;gap:12px;}
+  .btn{
+    flex:1;border:none;border-radius:14px;padding:18px;
+    font-size:18px;font-weight:800;letter-spacing:.05em;color:#0b0e14;
+  }
+  .btn.start{background:var(--a);}
+  .btn.stop{background:#ff5d5d;color:#fff;}
+  .btn.reset{background:#2a3344;color:var(--text);flex:0 0 96px;}
+  .btn:active{filter:brightness(.9);}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+  <header>SWAP TIMER</header>
+
+  <div class="display">
+    <div class="phase" id="phase">Ready</div>
+    <p class="count" id="count">30</p>
+    <div class="rounds" id="rounds">Tap Start</div>
+  </div>
+
+  <div class="settings">
+    <div class="row">
+      <div class="field a">
+        <label><span class="tag">A</span> · Hold (sec)</label>
+        <div class="stepper">
+          <button data-step="a" data-d="-1">−</button>
+          <input id="aSec" type="number" inputmode="numeric" value="30" min="1" max="999">
+          <button data-step="a" data-d="1">+</button>
+        </div>
+      </div>
+      <div class="field b">
+        <label><span class="tag">B</span> · Swap (sec)</label>
+        <div class="stepper">
+          <button data-step="b" data-d="-1">−</button>
+          <input id="bSec" type="number" inputmode="numeric" value="5" min="1" max="999">
+          <button data-step="b" data-d="1">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn start" id="startBtn">Start</button>
+      <button class="btn stop hidden" id="stopBtn">Pause</button>
+      <button class="btn reset" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const countEl=$("count"), phaseEl=$("phase"), roundsEl=$("rounds");
+  const aIn=$("aSec"), bIn=$("bSec");
+  const startBtn=$("startBtn"), stopBtn=$("stopBtn");
+
+  let audioCtx=null;
+  function audio(){
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    return audioCtx;
+  }
+  // short beep at frequency f starting at time offset t (sec)
+  function beep(f, t, dur){
+    const ctx=audio();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type="square"; o.frequency.value=f;
+    o.connect(g); g.connect(ctx.destination);
+    const start=ctx.currentTime+t;
+    g.gain.setValueAtTime(0.0001,start);
+    g.gain.exponentialRampToValueAtTime(0.35,start+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,start+dur);
+    o.start(start); o.stop(start+dur+0.02);
+  }
+  // A->B : single high beep.  B->A : double beep.
+  function beepToB(){ beep(1320,0,0.09); }
+  function beepToA(){ beep(880,0,0.09); beep(880,0.14,0.09); }
+
+  let running=false, phase="A", remaining=0, round=1, timer=null, endAt=0;
+
+  function clampVal(el){
+    let v=parseInt(el.value,10); if(isNaN(v)) v=1;
+    v=Math.max(1,Math.min(999,v)); el.value=v; return v;
+  }
+  function durA(){return clampVal(aIn);}
+  function durB(){return clampVal(bIn);}
+
+  function render(){
+    countEl.textContent=remaining;
+    phaseEl.textContent = phase==="A" ? "Hold" : "Swap";
+    roundsEl.textContent = "Round "+round+" · "+(phase==="A"?"A":"B");
+    document.body.classList.toggle("run-a", running && phase==="A");
+    document.body.classList.toggle("run-b", running && phase==="B");
+  }
+
+  function tick(){
+    const now=Date.now();
+    const left=Math.round((endAt-now)/1000);
+    if(left<=0){ swap(); return; }
+    if(left!==remaining){ remaining=left; render(); }
+  }
+
+  function swap(){
+    if(phase==="A"){ phase="B"; beepToB(); }
+    else { phase="A"; round++; beepToA(); }
+    remaining = phase==="A"?durA():durB();
+    endAt=Date.now()+remaining*1000;
+    render();
+  }
+
+  function start(){
+    audio(); // unlock on user gesture
+    if(!running){
+      if(remaining<=0){ phase="A"; round=1; remaining=durA(); }
+      running=true;
+      endAt=Date.now()+remaining*1000;
+      timer=setInterval(tick,100);
+      startBtn.classList.add("hidden"); stopBtn.classList.remove("hidden");
+      if(navigator.wakeLock) requestWake();
+      render();
+    }
+  }
+  function pause(){
+    running=false; clearInterval(timer);
+    startBtn.classList.remove("hidden"); stopBtn.classList.add("hidden");
+    startBtn.textContent="Resume";
+    releaseWake();
+    document.body.classList.remove("run-a","run-b");
+  }
+  function reset(){
+    running=false; clearInterval(timer);
+    phase="A"; round=1; remaining=durA();
+    startBtn.classList.remove("hidden"); stopBtn.classList.add("hidden");
+    startBtn.textContent="Start"; phaseEl.textContent="Ready"; roundsEl.textContent="Tap Start";
+    document.body.classList.remove("run-a","run-b");
+    countEl.textContent=remaining;
+  }
+
+  // wake lock so screen stays on
+  let wakeLock=null;
+  async function requestWake(){ try{ wakeLock=await navigator.wakeLock.request("screen"); }catch(e){} }
+  function releaseWake(){ if(wakeLock){ wakeLock.release(); wakeLock=null; } }
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && running) requestWake(); });
+
+  startBtn.onclick=start;
+  stopBtn.onclick=pause;
+  $("resetBtn").onclick=reset;
+
+  document.querySelectorAll("[data-step]").forEach(b=>{
+    b.onclick=()=>{
+      const el = b.dataset.step==="a"?aIn:bIn;
+      el.value=clampVal(el)+parseInt(b.dataset.d,10);
+      clampVal(el);
+      if(!running){ if(b.dataset.step==="a") remaining=durA(); reset(); }
+    };
+  });
+  aIn.onchange=()=>{ if(!running) reset(); };
+  bIn.onchange=clampVal.bind(null,bIn);
+
+  reset();
+})();
+</script>
+</body>
+</html>
